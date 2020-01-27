@@ -1,12 +1,12 @@
 #! /usr/bin/python3.8
+# Some people, when confronted with a problem, think: “I know, I'll use regular expressions.” Now they have two problems.
+#
 # ¬ >> negació
-# ^ >> conjunció
 # + >> disjunció
+# ^ >> conjunció
 # > >> condicional
 # = >> bicondicional
 # q > (p + (q ^ r) + ¬( s ^ (t + u)) + (g) = r
-
-# TODO: parse ^+>= (L. 55+)
 
 import string, re, sys
 
@@ -28,6 +28,7 @@ elif (diff := analize.count('(') - analize.count(')')) != 0:
 			analize = '(' + analize
 
 variables = list(set([l for l in analize if l in string.ascii_lowercase]))
+variables.sort()
 
 vv = dict.fromkeys(variables)
 
@@ -45,15 +46,41 @@ for i in range(2**len(variables)):
 	for val in vv.values():
 		finalstr += val + ' '
 
-
 	evaluated = analize
+
 	for k in vv.keys():
 		evaluated = evaluated.replace(k, vv[k])
-		while len(evaluated) != 1:
-			evaluated = re.sub(r'\((\w)\)', r'\1', evaluated)
-			evaluated = re.sub(r'¬V', r'F', evaluated)
-			evaluated = re.sub(r'¬F', r'V', evaluated)
 
+	while len(evaluated) != 1: #'¬' in evaluated or '(' in evaluated:
+		evaluated = re.sub(r'\((\w)\)', r'\1', evaluated)
+		evaluated = re.sub(r'¬V', r'F', evaluated)
+		evaluated = re.sub(r'¬F', r'V', evaluated)
+		# god save stackoverflow https://stackoverflow.com/questions/5616822/python-regex-find-all-overlapping-matches
+		matches = re.finditer(r'\w[+^>=](?=(\w))', evaluated)
+		offset = 0
+		#print(evaluated)
+		for match in matches:
+			start = match.start() - offset
+			end = match.end() - offset
+			operation = evaluated[start+1]
+			char = 'F'
+			if operation == '+':
+				if evaluated[start] == 'V' or evaluated[end] == 'V':
+					char = 'V'
+			elif operation == '^':
+				if evaluated[start] == 'V' and evaluated[end] == 'V':
+					char = 'V'
+			elif operation == '>':
+				if (evaluated[start] == 'F' and evaluated[end] == 'F') or evaluated[end] == 'V':
+					char = 'V'
+			elif operation == '=':
+				if evaluated[start] == evaluated[end]:
+					char = 'V'
+
+			evaluated = evaluated[:start] + char + evaluated[end+1:]
+			#print(evaluated)
+			
+			offset += 2
 
 	finalstr += '| ' + evaluated.center(len(analize), ' ') + ' '
 
