@@ -1,4 +1,4 @@
-#! /usr/bin/python3.8
+#!/usr/bin/env python
 # Some people, when confronted with a problem, think: “I know, I'll use regular expressions.” Now they have two problems.
 #
 # ¬ >> negació

@@ -1,4 +1,4 @@
-#! /usr/bin/python3
+#!/usr/bin/env python
 import bs4, pathlib, requests, sys, urllib.parse
 
 if len(sys.argv) < 2:
